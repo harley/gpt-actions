@@ -6,10 +6,84 @@ info:
   version: 1.0.0
 
 servers: 
-  - url: https://api.todoist.com/rest/v2
+  - url: https://api.todoist.com
     description: Todoist REST API v2 server URL
 paths:
-  /projects:
+  /sync/v9/completed/get_all:
+    get:
+      summary: Get All Completed Items
+      description: Retrieves all completed items from Todoist.
+      operationId: getCompletedItems
+      tags:
+        - Tasks
+      parameters:
+      - name: project_id
+        in: query
+        required: false
+        description: Filter the tasks by project ID.
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        description: The number of items to return.
+        schema:
+          type: integer
+          default: 30
+          maximum: 200
+      - name: offset
+        in: query
+        required: false
+        description: Used for pagination.
+        schema:
+          type: integer
+      - name: until
+        in: query
+        required: false
+        description: Return items completed on or before this date.
+        schema:
+          type: string
+          format: date-time
+      - name: since
+        in: query
+        required: false
+        description: Return items completed after this date.
+        schema:
+          type: string
+          format: date-time
+      - name: annotate_notes
+        in: query
+        required: false
+        description: Return notes with completed items.
+        schema:
+          type: boolean
+      - name: annotate_items
+        in: query
+        required: false
+        description: Return full user item in the payload.
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: A list of completed items.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/CompletedItem"
+                  projects:
+                    type: object
+                    additionalProperties:
+                      "$ref": "#/components/schemas/Project"
+                  sections:
+                    type: object
+                    additionalProperties:
+                      "$ref": "#/components/schemas/Section"
+  /rest/v2/projects:
     get:
       summary: Get all projects
       description: |
@@ -54,6 +128,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
     post:
+      x-openai-isConsequential: false
       summary: Create a new project
       description: |
         Creates a new project and returns it as a JSON object.
@@ -125,7 +200,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /projects/{projectId}:
+  /rest/v2/projects/{projectId}:
     get:
       summary: Get a project
       description: |
@@ -175,6 +250,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
     post:
+      x-openai-isConsequential: false
       summary: Update a project
       description: |
         Returns a JSON object containing the updated project object.
@@ -275,7 +351,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /projects/{projectId}/collaborators:
+  /rest/v2/projects/{projectId}/collaborators:
     get:
       summary: Get all project collaborators
       description: |
@@ -312,7 +388,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /sections:
+  /rest/v2/sections:
     get:
       summary: Get all sections
       description: |
@@ -357,6 +433,7 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
                 
     post:
+      x-openai-isConsequential: false
       summary: Create a new section
       description: |
         Creates a new section and returns it as a JSON object.
@@ -408,7 +485,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
   
-  /sections/{sectionId}:
+  /rest/v2/sections/{sectionId}:
     get:
       summary: Get single section
       description: |
@@ -450,6 +527,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
     post:
+      x-openai-isConsequential: false
       summary: Update a section name
       description: |
         Returns the updated section as a JSON object.
@@ -524,7 +602,7 @@ paths:
                 schema:
                   $ref: '#/components/schemas/ErrorModel'
     
-  /tasks:
+  /rest/v2/tasks:
     get:
       summary: Get active tasks
       description: |
@@ -618,6 +696,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
     post:
+      x-openai-isConsequential: false
       summary: Create a new task
       description: |
         Creates a new task and returns it as a JSON object.
@@ -777,7 +856,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /tasks/{taskId}:
+  /rest/v2/tasks/{taskId}:
     get:
       summary: Get an active task
       description: |
@@ -837,6 +916,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
     post:
+      x-openai-isConsequential: false
       summary: Update a task
       description: |
         Updates a specified task and returns it as a JSON object.
@@ -993,8 +1073,9 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
 
 
-  /tasks/{taskId}/close:
+  /rest/v2/tasks/{taskId}/close:
     post:
+      x-openai-isConsequential: false
       summary: Close a task
       description: |
         Closes a task. Regular tasks are marked complete and moved to history, along with their subtasks. Tasks with recurring due dates will be scheduled to their next occurrence.
@@ -1022,8 +1103,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
-  /tasks/{taskId}/reopen:
+  /rest/v2/tasks/{taskId}/reopen:
     post:
+      x-openai-isConsequential: false
       summary: Reopen a task
       description: |
         Reopens a task. Any ancestor items or sections will also be marked as uncomplete and restored from history. The reinstated items and sections will appear at the end of the list within their parent, after any previously active items.
@@ -1052,7 +1134,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /comments:
+  /rest/v2/comments:
     get:
       summary: Get all comments
       description: |
@@ -1181,7 +1263,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /comments/{comment_id}:
+  /rest/v2/comments/{comment_id}:
     get:
       summary: Get a comment
       description: |
@@ -1229,6 +1311,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
     post:
+      x-openai-isConsequential: false
       summary: Update a comment
       description: |
         Updates a comment and returns it as a JSON object.
@@ -1310,7 +1393,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /labels:
+  /rest/v2/labels:
     get:
       summary: Get all personal labels
       description: |
@@ -1348,6 +1431,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
     post:
+      x-openai-isConsequential: false
       summary: Create a new personal label
       description: |
         Creates a new personal label and returns its object as JSON.
@@ -1407,7 +1491,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /labels/{label_id}:
+  /rest/v2/labels/{label_id}:
     get:
       summary: Get a personal label
       description: |
@@ -1450,6 +1534,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
     post:
+      x-openai-isConsequential: false
       summary: Update a personal label
       description: |
         Returns the updated label.
@@ -1544,7 +1629,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /labels/shared:
+  /rest/v2/labels/shared:
     get:
       summary: Get all shared labels
       description: |
@@ -1584,8 +1669,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /labels/shared/rename:
+  /rest/v2/labels/shared/rename:
     post:
+      x-openai-isConsequential: false
       summary: Rename shared labels
       description: |
         Renames all instances of a shared label.
@@ -1620,8 +1706,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
 
-  /labels/shared/remove:
+  /rest/v2/labels/shared/remove:
     post:
+      x-openai-isConsequential: false
       summary: Remove shared labels
       description: |
         Removes all instances of a shared label from the tasks where it is applied. If no instances of the label name are found, the request will still be considered successful.
@@ -1653,6 +1740,29 @@ paths:
 
 components:
   schemas:
+    CompletedItem:
+      type: object
+      properties:
+        id:
+          type: string
+        task_id:
+          type: string
+        user_id:
+          type: string
+        project_id:
+          type: string
+        section_id:
+          type: string
+        content:
+          type: string
+        completed_at:
+          type: string
+          format: date-time
+        note_count:
+          type: integer
+        meta_data:
+          type: string
+
     Project:
       type: object
       properties:
